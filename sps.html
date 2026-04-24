@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Parking System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-base:    #0f1117;
+  --bg-panel:   #161920;
+  --bg-card:    #1c2028;
+  --bg-inset:   #12151c;
+  --bg-hover:   #222834;
+  --border:     rgba(255,255,255,0.07);
+  --border-mid: rgba(255,255,255,0.12);
+  --border-hi:  rgba(255,255,255,0.20);
+  --tx:         #e8eaf0;
+  --tx-muted:   #7a8199;
+  --tx-dim:     #4a5168;
+  --accent:     #4f8ef7;
+  --accent-dim: rgba(79,142,247,0.12);
+  --green:      #34c785;
+  --green-dim:  rgba(52,199,133,0.12);
+  --amber:      #f5a623;
+  --amber-dim:  rgba(245,166,35,0.12);
+  --red:        #f05252;
+  --red-dim:    rgba(240,82,82,0.12);
+  --pink:       #e8699a;
+  --pink-dim:   rgba(232,105,154,0.12);
+  --purple:     #9d79f2;
+  --purple-dim: rgba(157,121,242,0.15);
+  --font-sans:  'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono:  'IBM Plex Mono', monospace;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-base);
+  color: var(--tx);
+  min-height: 100vh;
+  padding: 20px 16px;
+  line-height: 1.5;
+}
+
+#app { max-width: 1020px; margin: 0 auto; }
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header-brand { display: flex; align-items: center; gap: 14px; }
+.header-icon {
+  width: 40px; height: 40px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(79,142,247,0.25);
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.header-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--tx);
+}
+.header-sub {
+  font-size: 12px;
+  color: var(--tx-muted);
+  margin-top: 2px;
+  font-family: var(--font-mono);
+}
+.header-badges { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+.badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+}
+.badge-free    { background: var(--bg-card); color: var(--tx-muted); border-color: var(--border-mid); }
+.badge-premium { background: var(--purple-dim); color: var(--purple); border-color: rgba(157,121,242,0.35); }
+.badge-upgrade { background: var(--bg-card); color: var(--accent); border-color: rgba(79,142,247,0.35); }
+.badge-upgrade:hover { background: var(--accent-dim); }
+
+/* ── Layout ── */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 270px;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 740px) { .layout { grid-template-columns: 1fr; } }
+
+/* ── Panel ── */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+}
+.panel + .panel { margin-top: 12px; }
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.panel-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--tx-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+}
+
+/* ── Mode chip ── */
+.chip {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  border: 1px solid;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.chip::before { content:''; width:6px; height:6px; border-radius:50%; display:inline-block; }
+.chip-auto   { background: var(--accent-dim);  color: var(--accent); border-color: rgba(79,142,247,0.3); }
+.chip-auto::before   { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.chip-select { background: var(--amber-dim);  color: var(--amber); border-color: rgba(245,166,35,0.3); }
+.chip-select::before { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.chip-reserve{ background: var(--pink-dim);   color: var(--pink);  border-color: rgba(232,105,154,0.3); }
+.chip-reserve::before{ background: var(--pink);  box-shadow: 0 0 6px var(--pink); }
+
+/* ── Hint bar ── */
+.hint-bar {
+  font-size: 12px;
+  color: var(--tx-muted);
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px 11px;
+  margin-bottom: 11px;
+  min-height: 35px;
+  line-height: 1.5;
+}
+
+/* ── Canvas ── */
+canvas {
+  display: block;
+  width: 100%;
+  cursor: crosshair;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+}
+
+/* ── Path info ── */
+.path-info {
+  display: none;
+  margin-top: 9px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid rgba(79,142,247,0.2);
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
+  line-height: 1.6;
+}
+
+/* ── Legend ── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 11px;
+}
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--tx-muted);
+  font-family: var(--font-mono);
+}
+.leg-dot {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ── Stats grid ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 13px;
+}
+.stat-card {
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-md);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.stat-card:nth-child(2)::before { background: var(--green-dim); }
+.stat-card:nth-child(3)::before { background: var(--purple-dim); }
+.stat-card:nth-child(4)::before { background: var(--amber-dim); }
+.stat-label {
+  font-size: 10px;
+  color: var(--tx-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  margin-bottom: 4px;
+}
+.stat-val {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--tx);
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+.stat-card:nth-child(2) .stat-val { color: var(--green); }
+.stat-card:nth-child(3) .stat-val { color: var(--purple); }
+.stat-card:nth-child(4) .stat-val { color: var(--amber); }
+
+/* ── Buttons ── */
+.btn {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-card);
+  color: var(--tx);
+  margin-bottom: 6px;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: var(--font-sans);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.btn:hover  { background: var(--bg-hover); border-color: var(--border-hi); }
+.btn:active { transform: scale(0.99); }
+.btn-accent {
+  background: rgba(79,142,247,0.15);
+  border-color: rgba(79,142,247,0.35);
+  color: var(--accent);
+}
+.btn-accent:hover { background: rgba(79,142,247,0.22); }
+.btn-danger {
+  background: var(--red-dim);
+  border-color: rgba(240,82,82,0.3);
+  color: var(--red);
+}
+.btn-danger:hover { background: rgba(240,82,82,0.22); }
+.btn-active {
+  background: rgba(245,166,35,0.15);
+  border-color: rgba(245,166,35,0.4);
+  color: var(--amber);
+}
+.btn-active:hover { background: rgba(245,166,35,0.22); }
+.btn-icon { font-size: 13px; flex-shrink: 0; }
+
+/* ── Divider ── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
+}
+
+/* ── Queue list ── */
+.queue-list { max-height: 100px; overflow-y: auto; margin-top: 7px; }
+.q-item {
+  font-size: 11px;
+  padding: 5px 9px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  margin-bottom: 4px;
+  color: var(--tx);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+}
+.q-item span:last-child { color: var(--purple); }
+
+/* ── Log ── */
+.log-box {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--tx-muted);
+  max-height: 160px;
+  overflow-y: auto;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px 10px;
+}
+.log-row {
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  line-height: 1.6;
+}
+.log-row:last-child { border-bottom: none; }
+.log-ok   { color: var(--green); }
+.log-err  { color: var(--red); }
+.log-warn { color: var(--amber); }
+.log-info { color: var(--tx-muted); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="header">
+    <div class="header-brand">
+      <div class="header-icon">🅿</div>
+      <div>
+        <div class="header-title">Smart Parking System</div>
+        <div class="header-sub">20×20 grid · A* corridor routing · 32 spots</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span id="tier-label" class="badge badge-free">FREE TIER</span>
+      <button class="badge badge-upgrade" onclick="togglePremium()">★ Upgrade</button>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- LEFT: Grid panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-label">Parking Grid</span>
+        <span id="mode-chip" class="chip chip-auto">Auto mode</span>
+      </div>
+      <div id="hint-bar" class="hint-bar">Add a car to assign it to the nearest available spot automatically.</div>
+      <canvas id="gc"></canvas>
+      <div id="path-info" class="path-info"></div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#2a2e3a;border:1px solid #3d4252"></div>Floor</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#222b3a;border:1px solid #2d3d52"></div>Vacant</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#2a1f4a;border:1px solid #9d79f2"></div>Occupied</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#0d2e1f;border:1px solid #34c785"></div>Nearest</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#0d1e30;border:1px solid #4f8ef7"></div>A* path</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#2e2210;border:1px solid #f5a623"></div>Selected</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#2a1020;border:1px solid #e8699a"></div>Reserved</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#4f8ef7"></div>Entrance</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Controls -->
+    <div>
+      <div class="panel">
+        <div class="panel-label" style="margin-bottom:11px">Statistics</div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val" id="s-total">32</div></div>
+          <div class="stat-card"><div class="stat-label">Available</div><div class="stat-val" id="s-avail">32</div></div>
+          <div class="stat-card"><div class="stat-label">Occupied</div><div class="stat-val" id="s-occ">0</div></div>
+          <div class="stat-card"><div class="stat-label">Queued</div><div class="stat-val" id="s-queue">0</div></div>
+        </div>
+
+        <button class="btn" onclick="addCar()"><span class="btn-icon">＋</span>Add car to queue</button>
+        <button class="btn" onclick="processNext()"><span class="btn-icon">▶</span>Process next car</button>
+        <button class="btn" onclick="processAll()"><span class="btn-icon">⏩</span>Process all cars</button>
+        <button id="sel-btn" class="btn" onclick="toggleSelectMode()"><span class="btn-icon">⊕</span>Select spot manually</button>
+
+        <!-- Undo / Redo row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+          <button id="undo-btn" class="btn" onclick="undo()" disabled style="opacity:0.35;margin-bottom:0;justify-content:center">
+            <span class="btn-icon">↩</span>Undo
+          </button>
+          <button id="redo-btn" class="btn" onclick="redo()" disabled style="opacity:0.35;margin-bottom:0;justify-content:center">
+            <span class="btn-icon">↪</span>Redo
+          </button>
+        </div>
+
+        <button class="btn btn-danger" onclick="resetLot()"><span class="btn-icon">↺</span>Reset parking lot</button>
+
+        <div id="reserve-section" style="display:none">
+          <hr class="divider">
+          <div class="panel-label" style="margin-bottom:8px;color:var(--purple)">Premium — Reservations</div>
+          <div style="font-size:11px;color:var(--tx-muted);margin-bottom:9px;font-family:var(--font-mono)">Reserve a spot 10 min before arrival.</div>
+          <button id="res-btn" class="btn btn-accent" onclick="toggleReserveMode()"><span class="btn-icon">🔒</span>Reserve a spot</button>
+          <div id="res-list" class="queue-list"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label" style="margin-bottom:8px">Activity Log</div>
+        <div class="log-box" id="log"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   CONSTANTS & CONFIGURATION
+═══════════════════════════════════════════ */
+const GRID = 20;
+const ENTRANCE = [10, 0];   // entrance column, row
+
+/*
+  Spot layout — four 2×4 clusters:
+    Left-top:    cols 2-5, rows 4-5
+    Left-bottom: cols 2-5, rows 10-11
+    Right-top:   cols 15-18, rows 4-5
+    Right-bottom:cols 15-18, rows 10-11
+
+  Main corridors (free lanes the path uses):
+    Horizontal: rows 0,1,2,3 (top zone), rows 6-9 (mid zone), rows 12-19 (bottom zone)
+    Vertical:   cols 0-1, cols 6-14, cols 19 (always open)
+    Plus the entrance column (10) is always open.
+*/
+const SPOT_CONFIGS = [
+  /* Left-top */
+  [2,4],[3,4],[4,4],[5,4],
+  [2,5],[3,5],[4,5],[5,5],
+  /* Left-bottom */
+  [2,10],[3,10],[4,10],[5,10],
+  [2,11],[3,11],[4,11],[5,11],
+  /* Right-top */
+  [15,4],[16,4],[17,4],[18,4],
+  [15,5],[16,5],[17,5],[18,5],
+  /* Right-bottom */
+  [15,10],[16,10],[17,10],[18,10],
+  [15,11],[16,11],[17,11],[18,11]
+];
+
+const EMOJIS = ['🚗','🚙','🚕','🚐','🏎️'];
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let spots        = [];
+let carCounter   = 0;
+let carQueue     = [];
+let parkedCars   = [];
+let lastPath     = [];
+let nearestSpot  = null;
+let selectedSpot = null;
+let selectMode   = false;
+let reserveMode  = false;
+let isPremium    = false;
+let reservations = {};
+let reserveTimers= {};
+
+/* ── Undo / Redo stacks ── */
+let undoStack = [];
+let redoStack = [];
+const MAX_UNDO = 30;
+
+function captureSnapshot(label) {
+  return {
+    label,
+    spots:       JSON.parse(JSON.stringify(spots)),
+    carCounter,
+    carQueue:    JSON.parse(JSON.stringify(carQueue)),
+    parkedCars:  JSON.parse(JSON.stringify(parkedCars)),
+    lastPath:    JSON.parse(JSON.stringify(lastPath)),
+    reservations:JSON.parse(JSON.stringify(reservations)),
+  };
+}
+
+function pushUndo(label) {
+  undoStack.push(captureSnapshot(label));
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack = [];
+  updateUndoBtn();
+}
+
+function applySnapshot(snap) {
+  Object.values(reserveTimers).forEach(clearTimeout);
+  reserveTimers = {};
+  spots        = snap.spots;
+  carCounter   = snap.carCounter;
+  carQueue     = snap.carQueue;
+  parkedCars   = snap.parkedCars;
+  lastPath     = snap.lastPath;
+  reservations = snap.reservations;
+  for (const id of Object.keys(reservations)) {
+    const r         = reservations[id];
+    const remaining = r.expires - Date.now();
+    if (remaining > 0) {
+      reserveTimers[id] = setTimeout(() => {
+        if (reservations[id]) {
+          delete reservations[id];
+          delete reserveTimers[id];
+          log(`Reservation for Spot #${id} expired`, 'warn');
+          renderReservations(); draw();
+        }
+      }, remaining);
+    } else {
+      delete reservations[id];
+    }
+  }
+  selectMode   = false;
+  reserveMode  = false;
+  selectedSpot = null;
+  updateSelBtn();
+  nearestSpot = findNearest();
+  updateStats();
+  renderReservations();
+  updateUndoBtn();
+}
+
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(captureSnapshot('redo'));
+  const snap = undoStack.pop();
+  applySnapshot(snap);
+  log(`↩ Undone: ${snap.label}`, 'warn');
+  setHint(`Undone: "${snap.label}"`);
+  if (!lastPath.length) document.getElementById('path-info').style.display = 'none';
+  draw();
+}
+
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(captureSnapshot('before redo'));
+  const snap = redoStack.pop();
+  applySnapshot(snap);
+  log(`↪ Redone`, 'info');
+  setHint('Action redone.');
+  if (!lastPath.length) document.getElementById('path-info').style.display = 'none';
+  draw();
+}
+
+function updateUndoBtn() {
+  const ubtn = document.getElementById('undo-btn');
+  const rbtn = document.getElementById('redo-btn');
+  if (!ubtn || !rbtn) return;
+  ubtn.disabled = undoStack.length === 0;
+  rbtn.disabled = redoStack.length === 0;
+  ubtn.style.opacity = undoStack.length === 0 ? '0.35' : '1';
+  rbtn.style.opacity = redoStack.length === 0 ? '0.35' : '1';
+  const last = undoStack.length ? undoStack[undoStack.length - 1].label : '';
+  ubtn.title = undoStack.length ? `Undo: ${last}` : 'Nothing to undo';
+  rbtn.title = redoStack.length ? 'Redo last undone action' : 'Nothing to redo';
+}
+
+/* ═══════════════════════════════════════════
+   SPOT INIT
+═══════════════════════════════════════════ */
+function initSpots() {
+  spots = SPOT_CONFIGS.map(([x, y], i) => ({
+    id: i + 1, x, y, occupied: false, carId: null
+  }));
+}
+
+/* ═══════════════════════════════════════════
+   A* PATHFINDING
+   ─────────────────────────────────────────
+   Rules:
+   1. ALL parking spot cells are OBSTACLES —
+      the path CANNOT step on any spot cell.
+   2. The destination spot cell IS the goal;
+      the path ends BY ENTERING that cell
+      (we exclude only the destination from
+      the obstacle set so A* can reach it).
+   3. All other non-spot, in-bounds cells are
+      walkable corridors.
+   4. Neighbours: 4-directional only (no diag).
+   5. Returns the full cell list including
+      start (entrance) and end (spot cell),
+      or null if unreachable.
+═══════════════════════════════════════════ */
+function astar(sx, sy, ex, ey) {
+  /* Build obstacle set: every spot EXCEPT the destination */
+  const obstacles = new Set();
+  for (const s of spots) {
+    if (!(s.x === ex && s.y === ey)) {
+      obstacles.add(s.x * 100 + s.y);   // compact integer key
+    }
+  }
+
+  const cellKey = (x, y) => x * 100 + y;
+  const heuristic = (x, y) => Math.abs(x - ex) + Math.abs(y - ey);
+
+  /* Min-heap via sorted array (grid is 20×20 = 400 cells; fast enough) */
+  const openSet  = [];
+  const cameFrom = new Map();           // key → parent key
+  const gScore   = new Map();
+  const fScore   = new Map();
+
+  const startKey = cellKey(sx, sy);
+  gScore.set(startKey, 0);
+  fScore.set(startKey, heuristic(sx, sy));
+  openSet.push({ x: sx, y: sy, f: fScore.get(startKey) });
+
+  const DIRS = [[0,-1],[1,0],[0,1],[-1,0]];
+
+  while (openSet.length > 0) {
+    /* Pop node with lowest f */
+    openSet.sort((a, b) => a.f - b.f);
+    const cur = openSet.shift();
+    const { x: cx, y: cy } = cur;
+
+    /* Goal reached — reconstruct path */
+    if (cx === ex && cy === ey) {
+      const path = [];
+      let k = cellKey(cx, cy);
+      while (cameFrom.has(k)) {
+        const [px, py] = [Math.floor(k / 100), k % 100];
+        path.unshift([px, py]);
+        k = cameFrom.get(k);
+      }
+      /* prepend start */
+      path.unshift([sx, sy]);
+      /* ensure destination is the last entry */
+      if (path[path.length - 1][0] !== ex || path[path.length - 1][1] !== ey) {
+        path.push([ex, ey]);
+      }
+      return path;
+    }
+
+    const curKey = cellKey(cx, cy);
+    const curG   = gScore.get(curKey) ?? Infinity;
+
+    for (const [dx, dy] of DIRS) {
+      const nx = cx + dx;
+      const ny = cy + dy;
+
+      /* Bounds check */
+      if (nx < 0 || nx >= GRID || ny < 0 || ny >= GRID) continue;
+
+      /* Obstacle check */
+      const nk = cellKey(nx, ny);
+      if (obstacles.has(nk)) continue;
+
+      const tentativeG = curG + 1;
+      if (tentativeG < (gScore.get(nk) ?? Infinity)) {
+        /* Found a better path to this neighbour */
+        cameFrom.set(nk, curKey);
+        gScore.set(nk, tentativeG);
+        const f = tentativeG + heuristic(nx, ny);
+        fScore.set(nk, f);
+        /* Only push if not already in openSet with better f */
+        const existing = openSet.findIndex(n => n.x === nx && n.y === ny);
+        if (existing !== -1) {
+          openSet.splice(existing, 1);  // remove stale entry
+        }
+        openSet.push({ x: nx, y: ny, f });
+      }
+    }
+  }
+
+  return null;  /* no path found */
+}
+
+/* ═══════════════════════════════════════════
+   FIND NEAREST — uses true A* path length,
+   not Manhattan distance, so "nearest" means
+   the spot you can reach fastest via corridors
+═══════════════════════════════════════════ */
+function findNearest() {
+  let best = null;
+  let bestLen = Infinity;
+  for (const s of spots) {
+    if (s.occupied) continue;
+    if (reservations[s.id]) continue;
+    const path = astar(ENTRANCE[0], ENTRANCE[1], s.x, s.y);
+    if (path && path.length < bestLen) {
+      bestLen = path.length;
+      best = s;
+    }
+  }
+  return best;
+}
+
+/* ═══════════════════════════════════════════
+   CAR MANAGEMENT
+═══════════════════════════════════════════ */
+function addCar() {
+  pushUndo(`Add Car #${carCounter + 1} to queue`);
+  carCounter++;
+  const emoji = EMOJIS[(carCounter - 1) % EMOJIS.length];
+  carQueue.push({ id: carCounter, emoji });
+  updateStats();
+  log(`Car #${carCounter} ${emoji} joined the queue`, 'info');
+  nearestSpot = findNearest();
+  draw();
+}
+
+function processNext() {
+  if (!carQueue.length) {
+    log('Queue is empty — add a car first', 'warn');
+    return;
+  }
+
+  const car = carQueue.shift();
+
+  /* Determine target: manual selection overrides auto */
+  let target = selectedSpot || findNearest();
+  selectedSpot = null;
+  selectMode   = false;
+  updateSelBtn();
+
+  if (!target) {
+    log(`No reachable spots for Car #${car.id}!`, 'err');
+    carQueue.unshift(car);
+    updateStats();
+    return;
+  }
+  if (target.occupied) {
+    log(`Spot #${target.id} is already occupied`, 'err');
+    updateStats();
+    return;
+  }
+  if (reservations[target.id]) {
+    const r    = reservations[target.id];
+    const mins = Math.max(0, Math.ceil((r.expires - Date.now()) / 60000));
+    log(`Spot #${target.id} is reserved — cannot park here for ${mins}m`, 'err');
+    selectedSpot = null;
+    updateStats();
+    return;
+  }
+
+  /* Compute shortest corridor path to this specific target */
+  const path = astar(ENTRANCE[0], ENTRANCE[1], target.x, target.y);
+  if (!path) {
+    log(`No corridor path to Spot #${target.id}!`, 'err');
+    updateStats();
+    return;
+  }
+
+  /* Snapshot BEFORE committing the park action */
+  pushUndo(`Park Car #${car.id} at Spot #${target.id}`);
+
+  /* Park the car */
+  target.occupied = true;
+  target.carId    = car.id;
+
+  /* Clear reservation if used */
+  if (reservations[target.id]) {
+    clearTimeout(reserveTimers[target.id]);
+    delete reservations[target.id];
+    delete reserveTimers[target.id];
+    renderReservations();
+  }
+
+  lastPath = path;
+  parkedCars.push({ ...car, spotId: target.id });
+  nearestSpot = findNearest();
+  updateStats();
+
+  const steps = path.length - 1;   /* edges traversed, not cells */
+  log(`Car #${car.id} ${car.emoji} → Spot #${target.id}  [${steps} steps]`, 'ok');
+  setHint(`Car #${car.id} ${car.emoji} parked at Spot #${target.id}. Shortest corridor path: ${steps} steps.`);
+
+  const pi = document.getElementById('path-info');
+  pi.style.display = 'block';
+  pi.innerHTML =
+    `<b>Spot #${target.id}</b> at (col ${target.x}, row ${target.y}) &nbsp;·&nbsp; ` +
+    `<b>${steps}</b> steps &nbsp;·&nbsp; ` +
+    `<b>${path.length}</b> cells traversed`;
+
+  draw();
+}
+
+function processAll() {
+  while (carQueue.length) processNext();
+}
+
+function resetLot() {
+  initSpots();
+  carQueue     = [];
+  parkedCars   = [];
+  carCounter   = 0;
+  lastPath     = [];
+  nearestSpot  = null;
+  selectedSpot = null;
+  selectMode   = false;
+  reserveMode  = false;
+  reservations = {};
+  Object.values(reserveTimers).forEach(clearTimeout);
+  reserveTimers = {};
+  updateSelBtn();
+  updateStats();
+  renderReservations();
+  document.getElementById('path-info').style.display = 'none';
+  setHint('Lot reset. Add a car to begin.');
+  log('Parking lot reset', 'info');
+  draw();
+}
+
+/* ═══════════════════════════════════════════
+   PREMIUM / MODES
+═══════════════════════════════════════════ */
+function togglePremium() {
+  isPremium = !isPremium;
+  const lbl = document.getElementById('tier-label');
+  lbl.textContent  = isPremium ? '★ PREMIUM' : 'FREE TIER';
+  lbl.className    = isPremium ? 'badge badge-premium' : 'badge badge-free';
+  document.getElementById('reserve-section').style.display = isPremium ? 'block' : 'none';
+  log(isPremium ? 'Upgraded to Premium — reservations unlocked!' : 'Downgraded to Free tier', isPremium ? 'ok' : 'warn');
+}
+
+function toggleSelectMode() {
+  if (!carQueue.length) {
+    log('Add a car to the queue first', 'warn');
+    return;
+  }
+  selectMode = !selectMode;
+  if (selectMode) {
+    reserveMode = false;
+    setHint('Click any vacant spot on the grid. A* will compute the shortest corridor path to it.');
+  } else {
+    selectedSpot = null;
+    setHint('Manual selection cancelled.');
+  }
+  updateSelBtn();
+  draw();
+}
+
+function toggleReserveMode() {
+  if (!isPremium) return;
+  reserveMode = !reserveMode;
+  if (reserveMode) {
+    selectMode = false;
+    setHint('Click any vacant spot to reserve it for 10 minutes.');
+  } else {
+    setHint('Reservation mode off.');
+  }
+  document.getElementById('res-btn').textContent = reserveMode ? '✕ Cancel' : '🔒 Reserve a spot';
+  draw();
+}
+
+function updateSelBtn() {
+  const b = document.getElementById('sel-btn');
+  b.textContent = selectMode ? '✕ Cancel manual select' : '⊕ Select spot manually';
+  b.className   = selectMode ? 'btn btn-active' : 'btn';
+}
+
+function reserveSpot(spot) {
+  if (reservations[spot.id]) {
+    log(`Spot #${spot.id} is already reserved`, 'warn');
+    return;
+  }
+  pushUndo(`Reserve Spot #${spot.id}`);
+  reservations[spot.id] = { spotId: spot.id, expires: Date.now() + 10 * 60 * 1000 };
+  reserveTimers[spot.id] = setTimeout(() => {
+    if (reservations[spot.id]) {
+      delete reservations[spot.id];
+      delete reserveTimers[spot.id];
+      log(`Reservation for Spot #${spot.id} expired`, 'warn');
+      renderReservations();
+      draw();
+    }
+  }, 10 * 60 * 1000);
+  log(`Spot #${spot.id} reserved for 10 min`, 'ok');
+  renderReservations();
+  draw();
+}
+
+function renderReservations() {
+  const el   = document.getElementById('res-list');
+  const keys = Object.keys(reservations);
+  if (!keys.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--tx-dim);padding:3px 0;font-family:var(--font-mono)">No active reservations</div>';
+    return;
+  }
+  el.innerHTML = keys.map(id => {
+    const r    = reservations[id];
+    const mins = Math.max(0, Math.ceil((r.expires - Date.now()) / 60000));
+    return `<div class="q-item"><span>Spot #${id}</span><span>${mins}m left</span></div>`;
+  }).join('');
+}
+
+function updateStats() {
+  document.getElementById('s-total').textContent = spots.length;
+  document.getElementById('s-avail').textContent = spots.filter(s => !s.occupied).length;
+  document.getElementById('s-occ'  ).textContent = spots.filter(s =>  s.occupied).length;
+  document.getElementById('s-queue').textContent = carQueue.length;
+}
+
+function setHint(msg) { document.getElementById('hint-bar').textContent = msg; }
+
+function log(msg, type = 'info') {
+  const el = document.getElementById('log');
+  const d  = document.createElement('div');
+  d.className  = `log-row log-${type}`;
+  d.textContent = `${new Date().toLocaleTimeString('en', { hour12: false })}  ${msg}`;
+  el.insertBefore(d, el.firstChild);
+}
+
+/* ═══════════════════════════════════════════
+   CANVAS RENDERING
+═══════════════════════════════════════════ */
+const canvas = document.getElementById('gc');
+const ctx    = canvas.getContext('2d');
+let CELL     = 22;
+
+function resizeCanvas() {
+  const w = Math.min(canvas.parentElement.clientWidth - 32, 660);
+  CELL     = Math.floor(w / GRID);
+  canvas.width  = CELL * GRID;
+  canvas.height = CELL * GRID;
+  draw();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const pathSet = new Set(lastPath.map(([x, y]) => `${x}_${y}`));
+  const spotMap = {};
+  spots.forEach(s => { spotMap[`${s.x}_${s.y}`] = s; });
+
+  for (let y = 0; y < GRID; y++) {
+    for (let x = 0; x < GRID; x++) {
+      const px  = x * CELL;
+      const py  = y * CELL;
+      const key = `${x}_${y}`;
+      const spot     = spotMap[key];
+      const isEnt    = x === ENTRANCE[0] && y === ENTRANCE[1];
+      const isPath   = pathSet.has(key) && !spot && !isEnt;
+      const isNearest= nearestSpot && nearestSpot.x === x && nearestSpot.y === y;
+      const isSel    = selectedSpot && selectedSpot.x === x && selectedSpot.y === y;
+      const isRes    = spot && reservations[spot.id];
+
+      /* ── Base floor ── */
+      ctx.fillStyle = '#1a1d26';
+      ctx.fillRect(px, py, CELL, CELL);
+
+      if (isEnt) {
+        /* Entrance */
+        ctx.fillStyle = '#1a3356';
+        ctx.fillRect(px, py, CELL, CELL);
+        ctx.fillStyle = '#4f8ef7';
+        ctx.font      = `bold ${Math.max(10, CELL - 4)}px sans-serif`;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('↓', px + CELL / 2, py + CELL / 2);
+
+      } else if (spot) {
+        /* ── Spot cells ── */
+        if (isSel) {
+          ctx.fillStyle = '#2e2210';
+          ctx.fillRect(px, py, CELL, CELL);
+          ctx.strokeStyle = '#f5a623';
+          ctx.lineWidth   = 2;
+          ctx.strokeRect(px + 1, py + 1, CELL - 2, CELL - 2);
+
+        } else if (isRes) {
+          ctx.fillStyle = '#2a1020';
+          ctx.fillRect(px, py, CELL, CELL);
+          ctx.strokeStyle = '#e8699a';
+          ctx.lineWidth   = 2;
+          ctx.strokeRect(px + 1, py + 1, CELL - 2, CELL - 2);
+          /* Lock icon */
+          if (CELL > 14) {
+            ctx.fillStyle    = '#e8699a';
+            ctx.font         = `${Math.max(8, CELL - 8)}px sans-serif`;
+            ctx.textAlign    = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🔒', px + CELL / 2, py + CELL / 2);
+          }
+
+        } else if (isNearest && !spot.occupied) {
+          ctx.fillStyle = '#0d2e1f';
+          ctx.fillRect(px, py, CELL, CELL);
+          ctx.strokeStyle = '#34c785';
+          ctx.lineWidth   = 2;
+          ctx.strokeRect(px + 1, py + 1, CELL - 2, CELL - 2);
+
+        } else if (spot.occupied) {
+          ctx.fillStyle = '#211c3a';
+          ctx.fillRect(px, py, CELL, CELL);
+          ctx.strokeStyle = '#9d79f2';
+          ctx.lineWidth   = 1.5;
+          ctx.strokeRect(px + 1, py + 1, CELL - 2, CELL - 2);
+          if (CELL > 16) {
+            ctx.fillStyle    = '#c4aef8';
+            ctx.font         = `500 ${Math.max(8, CELL - 8)}px 'IBM Plex Mono', monospace`;
+            ctx.textAlign    = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('#' + spot.carId, px + CELL / 2, py + CELL / 2);
+          }
+
+        } else {
+          /* Vacant spot */
+          ctx.fillStyle = '#1c2232';
+          ctx.fillRect(px, py, CELL, CELL);
+          ctx.strokeStyle = '#2d3a52';
+          ctx.lineWidth   = 0.5;
+          ctx.strokeRect(px + 0.5, py + 0.5, CELL - 1, CELL - 1);
+        }
+
+      } else if (isPath) {
+        /* ── A* path corridor cell ── */
+        ctx.fillStyle = '#0d1e30';
+        ctx.fillRect(px, py, CELL, CELL);
+        ctx.fillStyle = '#4f8ef7';
+        const r = Math.max(2, CELL / 5.5);
+        ctx.beginPath();
+        ctx.arc(px + CELL / 2, py + CELL / 2, r, 0, Math.PI * 2);
+        ctx.fill();
+
+      }
+      /* else: plain floor cell — already drawn */
+
+      /* Grid line */
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth   = 0.5;
+      ctx.strokeRect(px, py, CELL, CELL);
+    }
+  }
+
+  /* Outer border */
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth   = 1;
+  ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+  /* Update mode chip */
+  const chip = document.getElementById('mode-chip');
+  if (selectMode) {
+    chip.textContent = 'Select mode';
+    chip.className   = 'chip chip-select';
+  } else if (reserveMode) {
+    chip.textContent = 'Reserve mode';
+    chip.className   = 'chip chip-reserve';
+  } else {
+    chip.textContent = 'Auto mode';
+    chip.className   = 'chip chip-auto';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   CANVAS CLICK HANDLER
+═══════════════════════════════════════════ */
+canvas.addEventListener('click', e => {
+  const rect  = canvas.getBoundingClientRect();
+  const scaleX = canvas.width  / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const cx    = Math.floor((e.clientX - rect.left) * scaleX / CELL);
+  const cy    = Math.floor((e.clientY - rect.top)  * scaleY / CELL);
+  const spot  = spots.find(s => s.x === cx && s.y === cy);
+
+  /* Reserve mode */
+  if (reserveMode && isPremium) {
+    if (!spot) { log('Click directly on a parking spot', 'warn'); return; }
+    if (spot.occupied) { log(`Spot #${spot.id} is already occupied`, 'err'); return; }
+    if (reservations[spot.id]) { log(`Spot #${spot.id} is already reserved`, 'warn'); return; }
+    reserveSpot(spot);
+    reserveMode = false;
+    document.getElementById('res-btn').textContent = '🔒 Reserve a spot';
+    setHint(`Spot #${spot.id} reserved for 10 minutes.`);
+    draw();
+    return;
+  }
+
+  /* Select mode — pick a target spot; path shown on processNext() */
+  if (selectMode) {
+    if (!spot) { log('Click directly on a parking spot', 'warn'); return; }
+    if (spot.occupied) { log(`Spot #${spot.id} is occupied`, 'err'); return; }
+    if (reservations[spot.id]) {
+      const r    = reservations[spot.id];
+      const mins = Math.max(0, Math.ceil((r.expires - Date.now()) / 60000));
+      const secs = Math.max(0, Math.ceil((r.expires - Date.now()) / 1000) % 60);
+      log(`Spot #${spot.id} is reserved — locked for ${mins}m ${secs}s`, 'err');
+      setHint(`⛔ Spot #${spot.id} is reserved and cannot be selected. It unlocks in ${mins}m ${secs}s.`);
+      return;
+    }
+
+    /* Preview the shortest path immediately */
+    const previewPath = astar(ENTRANCE[0], ENTRANCE[1], spot.x, spot.y);
+    if (!previewPath) {
+      log(`No corridor path to Spot #${spot.id}!`, 'err');
+      return;
+    }
+
+    selectedSpot = spot;
+    lastPath     = previewPath;          /* show the path on canvas RIGHT NOW */
+    selectMode   = false;
+    updateSelBtn();
+
+    const steps = previewPath.length - 1;
+    setHint(`Spot #${spot.id} selected. Shortest path: ${steps} steps. Click "Process next car" to park.`);
+    log(`Spot #${spot.id} selected — ${steps}-step corridor path previewed`, 'info');
+
+    const pi = document.getElementById('path-info');
+    pi.style.display = 'block';
+    pi.innerHTML =
+      `<b>Preview:</b> Spot #${spot.id} at (col ${spot.x}, row ${spot.y}) &nbsp;·&nbsp; ` +
+      `<b>${steps}</b> steps &nbsp;·&nbsp; ` +
+      `<b>${previewPath.length}</b> cells`;
+
+    draw();
+    return;
+  }
+});
+
+/* ═══════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════ */
+window.addEventListener('resize', resizeCanvas);
+
+/* Keyboard shortcuts: Ctrl+Z = undo, Ctrl+Y / Ctrl+Shift+Z = redo */
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+    if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+    if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+  }
+});
+
+initSpots();
+updateStats();
+updateUndoBtn();
+log('System online — 32 spots ready', 'ok');
+resizeCanvas();
+setInterval(renderReservations, 15000);
+</script>
+</body>
+</html>
