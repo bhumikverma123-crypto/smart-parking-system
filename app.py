@@ -9,7 +9,7 @@ Mirrors every feature from the frontend:
   • Reservations (Premium) with 10-minute auto-expiry
   • Undo / Redo stack (up to 30 snapshots)
   • Full activity log
-  • Reset (jeet)
+  • Reset
 
 Run:
     python app.py
